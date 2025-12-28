@@ -167,7 +167,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_BASE_URL = "http://127.0.0.1:8000";
+    const API_BASE_URL = "";
 
     const dateInput = document.getElementById('dateInput');
     const weatherInput = document.getElementById('weatherInput');
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPerformanceData() {
         try {
-            const response = await fetch(`${API_BASE_URL}/performance_data`);
+            const response = await fetch(`/performance_data`);
             if (!response.ok) return;
 
             const perfData = await response.json();
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         try {
-            const res = await fetch(`${API_BASE_URL}/init_data`);
+            const res = await fetch(`/init_data`);
             if (!res.ok) throw new Error("Init load failed");
 
             const data = await res.json();
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}/predict`, {
+            const response = await fetch(`/predict`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

@@ -275,3 +275,10 @@ Do not use hashtags, bullet points, or lists.
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+def frontend():
+    with open("traffic_predictor.html", "r", encoding="utf-8") as f:
+        return f.read()
