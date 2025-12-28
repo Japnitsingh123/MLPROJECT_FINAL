@@ -4,4 +4,6 @@ __pycache__
 .zenflow
 env/
 *.pyc
-*.pkl
+encoders.pkl
+traffic_model_balanced.pkl
+traffic_model_best.pkl
