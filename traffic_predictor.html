@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Traffic Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        #geminiText::-webkit-scrollbar { width: 6px; }
+        #geminiText::-webkit-scrollbar-track { background: #f1f5f9; }
+        #geminiText::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        #geminiText::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans text-gray-800" style="font-family: 'Inter', sans-serif;">
+
+<div class="container mx-auto max-w-7xl p-4 md:p-8">
+    
+    <header class="text-center mb-8 md:mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">🚦 Bangalore Traffic Congestion Predictor</h1>
+        <p id="subHeaderText" class="text-lg text-gray-600 mt-2">(Data-Driven Web App)</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+
+        <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg space-y-5">
+            <h2 class="text-2xl font-semibold text-gray-800 border-b pb-3">Enter Details</h2>
+
+            <div>
+                <label class="block text-sm font-medium">Select Date</label>
+                <input type="date" id="dateInput" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Area Name</label>
+                <select id="areaSelect" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500" disabled>
+                    <option>Loading areas...</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Road / Intersection Name</label>
+                <select id="roadSelect" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500" disabled>
+                    <option>Select area first...</option>
+                </select>
+            </div>
+
+            <!-- WEATHER -->
+            <div>
+                <label class="block text-sm font-medium">Weather Conditions</label>
+                <select id="weatherInput" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500">
+                    <option>Clear</option>
+                    <option>Overcast</option>
+                    <option>Windy</option>
+                    <option>Rain</option>
+                    <option>Fog</option>
+                </select>
+            </div>
+
+            <!-- 🌍 NEW : ENVIRONMENTAL IMPACT CATEGORY -->
+            <div>
+                <label class="block text-sm font-medium">Environmental Impact Category</label>
+                <select id="envCategoryInput" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500">
+                    <option>Very Clean</option>
+                    <option>Clean</option>
+                    <option>Slightly Polluted</option>
+                    <option>Polluted</option>
+                    <option>Highly Polluted</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Actual Congestion (Optional)</label>
+                <input type="number" id="actualInput" placeholder="Enter actual (0–100)"
+                        class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500" min="0" max="100">
+            </div>
+
+            <button id="predictButton"
+                class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 transition"
+                disabled>
+                Loading...
+            </button>
+        </div>
+
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg space-y-6 min-h-[400px]">
+
+            <h2 class="text-2xl font-semibold text-gray-800 border-b pb-3">Prediction Results</h2>
+
+            <div id="resultsPlaceholder" class="text-center text-gray-500 py-16">
+                <p class="text-lg">Your congestion analysis will appear here.</p>
+            </div>
+
+            <div id="resultsContainer" class="hidden space-y-6">
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700">Predicted Congestion Level</h3>
+                    
+                    <p id="predictionValue" class="text-5xl font-bold text-blue-600 my-2">--</p>
+
+                    <p id="categoryValue" class="text-xl font-semibold mt-2"></p>
+
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                        <div id="predictionProgress" class="bg-blue-600 h-2.5 rounded-full transition-all"
+                                style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">🧠 Gemini Traffic Analysis</h3>
+                    <div id="geminiSpinner" class="flex items-center space-x-2 text-gray-600">
+                        <div class="spinner w-5 h-5 border-2 border-t-blue-500 border-r-blue-500 border-b-blue-500 border-l-transparent rounded-full"></div>
+                        <span>Analyzing prediction with Gemini...</span>
+                    </div>
+                    
+                    <div id="geminiText" class="hidden bg-gray-50 border p-4 rounded-lg max-h-48 overflow-y-auto prose prose-sm"></div>
+                    <div id="geminiError" class="hidden text-red-600 bg-red-50 p-3 rounded-lg"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold">🔍 Estimated Internal Values</h3>
+                    <div class="bg-blue-50 border p-4 rounded-lg">
+                        <p><strong>Traffic Volume:</strong> <span id="trafficVolumeValue"></span></p>
+                        <p><strong>Environmental Impact:</strong> <span id="envImpactValue"></span></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 bg-white p-6 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">📊 Model Performance</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-50 p-6 rounded-lg border text-center">
+                <div class="text-sm text-gray-500 uppercase">RMSE</div>
+                <div id="rmseValue" class="text-4xl font-bold text-gray-800 mt-2">...</div>
+            </div>
+            
+            <div class="bg-gray-50 p-6 rounded-lg border text-center">
+                <div class="text-sm text-gray-500 uppercase">R² Score</div>
+                <div id="r2Value" class="text-4xl font-bold text-gray-800 mt-2">...</div>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-lg border text-center">
+                <div class="text-sm text-gray-500 uppercase">Accuracy</div>
+                <div id="accuracyValue" class="text-4xl font-bold text-gray-800 mt-2">...</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-8">
+        <p class="text-sm text-gray-500">
+            Model uses dataset-derived group medians for internal feature estimation.
+        </p>
+    </footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const API_BASE_URL = "http://127.0.0.1:8000";
+
+    const dateInput = document.getElementById('dateInput');
+    const weatherInput = document.getElementById('weatherInput');
+    const envCategoryInput = document.getElementById('envCategoryInput'); // NEW
+    const actualInput = document.getElementById('actualInput');
+
+    const areaSelect = document.getElementById('areaSelect');
+    const roadSelect = document.getElementById('roadSelect');
+    const predictButton = document.getElementById('predictButton');
+
+    const predictionValue = document.getElementById('predictionValue');
+    const categoryValue = document.getElementById('categoryValue');
+    const predictionProgress = document.getElementById('predictionProgress');
+    const trafficVolumeValue = document.getElementById('trafficVolumeValue');
+    const envImpactValue = document.getElementById('envImpactValue');
+
+    const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    const geminiSpinner = document.getElementById('geminiSpinner');
+    const geminiText = document.getElementById('geminiText');
+    const geminiError = document.getElementById('geminiError');
+
+    const rmseValue = document.getElementById('rmseValue');
+    const r2Value = document.getElementById('r2Value');
+    const accuracyValue = document.getElementById('accuracyValue');
+
+    const subHeaderText = document.getElementById('subHeaderText');
+
+    let areaRoadsMapping = {};
+
+    async function fetchPerformanceData() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/performance_data`);
+            if (!response.ok) return;
+
+            const perfData = await response.json();
+            rmseValue.textContent = perfData.rmse?.toFixed(3) || "N/A";
+            r2Value.textContent = perfData.r2?.toFixed(3) || "N/A";
+            accuracyValue.textContent = perfData.accuracy
+                ? `${perfData.accuracy.toFixed(1)}%`
+                : "N/A";
+
+        } catch (err) {
+            console.error("Perf error:", err);
+        }
+    }
+
+    async function init() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/init_data`);
+            if (!res.ok) throw new Error("Init load failed");
+
+            const data = await res.json();
+            areaRoadsMapping = data.area_to_roads;
+
+            areaSelect.innerHTML = "";
+            data.areas.forEach(a => {
+                let opt = document.createElement("option");
+                opt.value = a;
+                opt.textContent = a;
+                areaSelect.appendChild(opt);
+            });
+
+            await fetchPerformanceData();
+            updateRoads();
+
+            areaSelect.disabled = false;
+            roadSelect.disabled = false;
+            predictButton.disabled = false;
+            predictButton.textContent = "Predict Congestion Level 🚗";
+
+        } catch (err) {
+            console.error(err);
+            subHeaderText.textContent = "ERROR: Backend not reachable.";
+            subHeaderText.classList.add("text-red-600");
+        }
+    }
+
+    function updateRoads() {
+        const area = areaSelect.value;
+        const roads = areaRoadsMapping[area] || [];
+        roadSelect.innerHTML = "";
+        roads.forEach(r => {
+            const opt = document.createElement("option");
+            opt.value = r;
+            opt.textContent = r;
+            roadSelect.appendChild(opt);
+        });
+    }
+
+    areaSelect.addEventListener("change", updateRoads);
+
+    predictButton.addEventListener("click", async () => {
+        resultsPlaceholder.classList.add("hidden");
+        resultsContainer.classList.remove("hidden");
+
+        geminiError.classList.add("hidden");
+        geminiSpinner.classList.remove("hidden");
+
+        predictButton.disabled = true;
+        predictButton.textContent = "Predicting...";
+
+        const payload = {
+            date: dateInput.value,
+            area: areaSelect.value,
+            road: roadSelect.value,
+            weather: weatherInput.value,
+            
+            // 🌍 NEW FIELD
+            env_category: envCategoryInput.value,
+
+            actual: actualInput.value ? parseFloat(actualInput.value) : null
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/predict`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail);
+            }
+
+            const res = await response.json();
+
+            predictionValue.textContent = res.prediction.toFixed(2);
+            predictionProgress.style.width = `${Math.min(res.prediction, 100)}%`;
+
+            categoryValue.textContent = res.category;
+
+            trafficVolumeValue.textContent = res.internal_values.traffic_volume.toFixed(2);
+            envImpactValue.textContent = res.internal_values.env_impact.toFixed(2);
+
+            geminiSpinner.classList.add("hidden");
+            geminiText.innerHTML = res.gemini_analysis.replace(/\n/g, "<br>");
+            geminiText.classList.remove("hidden");
+
+        } catch (error) {
+            geminiSpinner.classList.add("hidden");
+            geminiError.textContent = `Prediction Error: ${error.message}`;
+            geminiError.classList.remove("hidden");
+
+        } finally {
+            predictButton.disabled = false;
+            predictButton.textContent = "Predict Congestion Level 🚗";
+        }
+    });
+
+    init();
+});
+</script>
+
+</body>
+</html>
