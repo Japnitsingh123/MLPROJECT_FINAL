@@ -8,3 +8,4 @@ joblib
 pydantic
 python-dotenv
 google-generativeai
+httpx

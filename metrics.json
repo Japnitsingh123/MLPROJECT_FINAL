@@ -1,0 +1,8 @@
+{
+  "rmse": 2.0313,
+  "r2": 0.9953,
+  "accuracy": 98.32,
+  "mape": 1.68,
+  "dataset_size": 19845,
+  "model_type": "StackingRegressor (RandomForest -> XGBoost)"
+}
